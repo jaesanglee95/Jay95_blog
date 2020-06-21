@@ -1,0 +1,99 @@
+---
+title: "Time Series"
+author: "Jay, Lee"
+date: '2019-05-27'
+tags:
+- R Markdown
+- plot
+- regression
+categories: R
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+```{r packages, include=FALSE}
+library(fUnitRoots)
+library(tseries)
+```
+
+연세대학교 시계열분석 수업자료를 토대로한 복습 자료입니다.
+
+# Time Series
+
+## 정상시계열과 random walk 자료생성
+```{r unit-root}
+# A time series which contains no unit-root:
+x = rnorm(1000)
+
+# A time series which contains a unit-root:
+y = cumsum(c(0, x))
+par(mfrow=c(2,1))
+plot.ts(x)
+plot.ts(y)
+```
+
+
+## 단위근 검정 / 1차 차분 후 단위근 검정
+```{r unitroot-test}
+adfTest(x)
+
+adfTest(y)
+
+#1차 차분 후 
+adfTest(diff(y)) 
+
+plot.ts(diff(y))
+```
+
+
+## PP Test
+```{r pptest}
+PP.test(x)
+PP.test(y)
+
+```
+
+
+## 5장의 stock data를 이용하여 복습
+```{r stock}
+data<-read.table("https://raw.githubusercontent.com/jaesanglee95/Jay_blog/master/stock.csv")
+stock<-ts(data)
+#stock data
+plot.ts(stock)
+
+adfTest(stock)
+PP.test(stock)
+```
+
+
+## 로그변환 후 결과 확인
+```{r log}
+logstock<-log(stock)
+plot(logstock)
+adfTest(logstock)
+PP.test(logstock)
+```
+
+
+## 로그변환 후 1차 차분 후 결과 확인
+```{r log-1diff}
+diff_logstock<-diff(logstock, lag=1)
+plot(diff_logstock)
+
+adfTest(diff_logstock)
+PP.test(diff_logstock)
+```
+
+
+## KPSS test 
+> 앞선 두 가지 검정 방법과 가설이 반대이다.
+<br> 귀무가설: 정상이다 vs 대립가설: random walk
+
+```{r kpss}
+kpss.test(diff_logstock)
+
+```
+

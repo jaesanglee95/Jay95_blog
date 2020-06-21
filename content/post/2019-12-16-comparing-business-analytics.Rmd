@@ -1,0 +1,43 @@
+---
+title: Comparing (Business Analytics)
+author: Jay, Lee
+date: '2019-12-16'
+slug: comparing-business-analytics
+categories:
+  - R
+tags:
+  - R Markdown
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set( warning = FALSE)
+```
+
+연세대학교 비즈니스 애널리틱스 수업자료를 토대로 한 복습 자료입니다. 
+
+## Load the .csv data from the web
+
+```{r load-data}
+seg.df = read.csv("http://goo.gl/qw303p")
+summary(seg.df)
+```
+## Explore the data structure
+
+```{r explore-data}
+str(seg.df)
+head(seg.df)
+summary(seg.df)
+```
+
+
+```{r plot, fig.cap = "Figure 1.1 proportions by subscribe across segment"}
+# loading the lattice package
+library(lattice)
+library(ggplot2)
+
+ggplot(seg.df, aes(x = Segment, fill = subscribe))+
+  geom_bar()+
+  labs(
+    y= ""
+  )
+```
+

@@ -1,0 +1,192 @@
+---
+title: "Time Series"
+author: "Jay, Lee"
+date: '2019-05-27'
+tags:
+- R Markdown
+- plot
+- regression
+categories: R
+
+---
+
+
+
+<p>연세대학교 시계열분석 수업자료를 토대로한 복습 자료입니다.</p>
+<div id="time-series" class="section level1">
+<h1>Time Series</h1>
+<div id="정상시계열과-random-walk-자료생성" class="section level2">
+<h2>정상시계열과 random walk 자료생성</h2>
+<pre class="r"><code># A time series which contains no unit-root:
+x = rnorm(1000)
+
+# A time series which contains a unit-root:
+y = cumsum(c(0, x))
+par(mfrow=c(2,1))
+plot.ts(x)
+plot.ts(y)</code></pre>
+<p><img src="/post/2019-05-27-Time_series_files/figure-html/unit-root-1.png" width="672" /></p>
+</div>
+<div id="단위근-검정-1차-차분-후-단위근-검정" class="section level2">
+<h2>단위근 검정 / 1차 차분 후 단위근 검정</h2>
+<pre class="r"><code>adfTest(x)</code></pre>
+<pre><code>## 
+## Title:
+##  Augmented Dickey-Fuller Test
+## 
+## Test Results:
+##   PARAMETER:
+##     Lag Order: 1
+##   STATISTIC:
+##     Dickey-Fuller: -22.6036
+##   P VALUE:
+##     0.01 
+## 
+## Description:
+##  Mon Jun 22 00:48:53 2020 by user: jay</code></pre>
+<pre class="r"><code>adfTest(y)</code></pre>
+<pre><code>## 
+## Title:
+##  Augmented Dickey-Fuller Test
+## 
+## Test Results:
+##   PARAMETER:
+##     Lag Order: 1
+##   STATISTIC:
+##     Dickey-Fuller: -0.8042
+##   P VALUE:
+##     0.36 
+## 
+## Description:
+##  Mon Jun 22 00:48:53 2020 by user: jay</code></pre>
+<pre class="r"><code>#1차 차분 후 
+adfTest(diff(y)) </code></pre>
+<pre><code>## 
+## Title:
+##  Augmented Dickey-Fuller Test
+## 
+## Test Results:
+##   PARAMETER:
+##     Lag Order: 1
+##   STATISTIC:
+##     Dickey-Fuller: -22.6036
+##   P VALUE:
+##     0.01 
+## 
+## Description:
+##  Mon Jun 22 00:48:53 2020 by user: jay</code></pre>
+<pre class="r"><code>plot.ts(diff(y))</code></pre>
+<p><img src="/post/2019-05-27-Time_series_files/figure-html/unitroot-test-1.png" width="672" /></p>
+</div>
+<div id="pp-test" class="section level2">
+<h2>PP Test</h2>
+<pre class="r"><code>PP.test(x)</code></pre>
+<pre><code>## 
+##  Phillips-Perron Unit Root Test
+## 
+## data:  x
+## Dickey-Fuller = -30.399, Truncation lag parameter = 7, p-value = 0.01</code></pre>
+<pre class="r"><code>PP.test(y)</code></pre>
+<pre><code>## 
+##  Phillips-Perron Unit Root Test
+## 
+## data:  y
+## Dickey-Fuller = -2.6131, Truncation lag parameter = 7, p-value = 0.3188</code></pre>
+</div>
+<div id="장의-stock-data를-이용하여-복습" class="section level2">
+<h2>5장의 stock data를 이용하여 복습</h2>
+<pre class="r"><code>data&lt;-read.table(&quot;https://raw.githubusercontent.com/jaesanglee95/Jay_blog/master/stock.csv&quot;)
+stock&lt;-ts(data)
+#stock data
+plot.ts(stock)</code></pre>
+<p><img src="/post/2019-05-27-Time_series_files/figure-html/stock-1.png" width="672" /></p>
+<pre class="r"><code>adfTest(stock)</code></pre>
+<pre><code>## 
+## Title:
+##  Augmented Dickey-Fuller Test
+## 
+## Test Results:
+##   PARAMETER:
+##     Lag Order: 1
+##   STATISTIC:
+##     Dickey-Fuller: 1.373
+##   P VALUE:
+##     0.9561 
+## 
+## Description:
+##  Mon Jun 22 00:48:54 2020 by user: jay</code></pre>
+<pre class="r"><code>PP.test(stock)</code></pre>
+<pre><code>## 
+##  Phillips-Perron Unit Root Test
+## 
+## data:  stock
+## Dickey-Fuller = -1.1877, Truncation lag parameter = 4, p-value = 0.9064</code></pre>
+</div>
+<div id="로그변환-후-결과-확인" class="section level2">
+<h2>로그변환 후 결과 확인</h2>
+<pre class="r"><code>logstock&lt;-log(stock)
+plot(logstock)</code></pre>
+<p><img src="/post/2019-05-27-Time_series_files/figure-html/log-1.png" width="672" /></p>
+<pre class="r"><code>adfTest(logstock)</code></pre>
+<pre><code>## 
+## Title:
+##  Augmented Dickey-Fuller Test
+## 
+## Test Results:
+##   PARAMETER:
+##     Lag Order: 1
+##   STATISTIC:
+##     Dickey-Fuller: 2.6555
+##   P VALUE:
+##     0.99 
+## 
+## Description:
+##  Mon Jun 22 00:48:54 2020 by user: jay</code></pre>
+<pre class="r"><code>PP.test(logstock)</code></pre>
+<pre><code>## 
+##  Phillips-Perron Unit Root Test
+## 
+## data:  logstock
+## Dickey-Fuller = -1.1894, Truncation lag parameter = 4, p-value = 0.9061</code></pre>
+</div>
+<div id="로그변환-후-1차-차분-후-결과-확인" class="section level2">
+<h2>로그변환 후 1차 차분 후 결과 확인</h2>
+<pre class="r"><code>diff_logstock&lt;-diff(logstock, lag=1)
+plot(diff_logstock)</code></pre>
+<p><img src="/post/2019-05-27-Time_series_files/figure-html/log-1diff-1.png" width="672" /></p>
+<pre class="r"><code>adfTest(diff_logstock)</code></pre>
+<pre><code>## 
+## Title:
+##  Augmented Dickey-Fuller Test
+## 
+## Test Results:
+##   PARAMETER:
+##     Lag Order: 1
+##   STATISTIC:
+##     Dickey-Fuller: -8.6082
+##   P VALUE:
+##     0.01 
+## 
+## Description:
+##  Mon Jun 22 00:48:54 2020 by user: jay</code></pre>
+<pre class="r"><code>PP.test(diff_logstock)</code></pre>
+<pre><code>## 
+##  Phillips-Perron Unit Root Test
+## 
+## data:  diff_logstock
+## Dickey-Fuller = -13.318, Truncation lag parameter = 4, p-value = 0.01</code></pre>
+</div>
+<div id="kpss-test" class="section level2">
+<h2>KPSS test</h2>
+<blockquote>
+<p>앞선 두 가지 검정 방법과 가설이 반대이다.
+<br> 귀무가설: 정상이다 vs 대립가설: random walk</p>
+</blockquote>
+<pre class="r"><code>kpss.test(diff_logstock)</code></pre>
+<pre><code>## 
+##  KPSS Test for Level Stationarity
+## 
+## data:  diff_logstock
+## KPSS Level = 0.1983, Truncation lag parameter = 4, p-value = 0.1</code></pre>
+</div>
+</div>

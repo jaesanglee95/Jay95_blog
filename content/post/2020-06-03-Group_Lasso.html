@@ -1,0 +1,98 @@
+---
+title: "Group Lasso"
+author: "Jay, Lee"
+date: '2020-06-03'
+tags:
+- R Markdown
+- plot
+- regression
+categories: R
+---
+
+
+
+<div id="importing-data" class="section level2">
+<h2>importing data</h2>
+<p>happy data는 서울 주민 가구원 행복도 조사 데이터로, Target variable은 Q48로 개인의 행복도를 나타낸다.</p>
+<pre class="r"><code>library(readr)
+library(tidyverse)
+happy &lt;- read_csv(&quot;https://raw.githubusercontent.com/YonseiESC/ESC-20SPRING/master/%ED%8C%8C%EC%9D%B4%EB%84%90%20%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8/6%EC%A1%B0/data/Seoul_Happiness_2014_train_dummies_06032141.csv&quot;)
+happy &lt;- happy %&gt;% 
+  dplyr::select(Q4B, everything(), -X1)
+dim(happy)
+## [1] 31848   180</code></pre>
+</div>
+<div id="outlier-처리" class="section level2">
+<h2>outlier 처리</h2>
+<p>선형회귀를 통해 target에서 residual이 높은 행을 제거했다.
+<a href="https://online.stat.psu.edu/stat501/lesson/11/11.3">참고</a>
+이후, target의 skewness를 줄이기 위해 제곱변환을 실시하고, target의 정보를 저장했다.</p>
+<pre class="r"><code>linmodel = lm(Q4B~.,happy) #basic linear model
+studresid = rstandard(linmodel)
+
+
+happy = happy[-which(abs(studresid)&gt;3),] 
+dim(happy)
+## [1] 31476   180
+
+mn = mean(happy$Q4B^2)
+sd = sd(happy$Q4B^2)
+happy$Q4B = happy$Q4B^2</code></pre>
+</div>
+<div id="group-lasso-model" class="section level2">
+<h2>Group Lasso model</h2>
+<p>Lasso model은 더미변수가 하나의 범주형에서 왔다는 사실을 고려하지 않는다. 따라서, group lasso를 통해 이 점을 보완한 model을 사용했다.</p>
+<div id="generate-list" class="section level3">
+<h3>generate list</h3>
+<p>group lasso에서는 modeling을 위해 data를 list 형식으로 바꾸는 것이 편리하다.</p>
+<pre class="r"><code>happy = scale(happy)
+
+nominal_list=c(&#39;HTYP&#39;,&#39;HLIV&#39;,&#39;RLI&#39;,&#39;Q1&#39;,&#39;Q2B&#39;,&#39;Q14A1&#39;,&#39;Q17A1&#39;,&#39;Q17A2&#39;,&#39;Q18&#39;,&#39;Q21A&#39;,&#39;Q25A1&#39;,&#39;Q26&#39;,&#39;Q31A1&#39;,&#39;Q39&#39;,&#39;Q44&#39;,&#39;Q47C&#39;,&#39;DE1&#39;,&#39;DE6&#39;,&#39;DE9&#39;)
+
+group_col &lt;- colnames(happy)[-1]
+group_col &lt;- str_split_fixed(group_col, &quot;_&quot;, n =2)[,1]
+
+happy_list &lt;- list(X = as.matrix(happy[,-1]), 
+                   Y = happy[,1], 
+                   group = factor(group_col))
+
+X &lt;- happy_list$X
+y &lt;- happy_list$Y
+group &lt;- happy_list$group</code></pre>
+</div>
+<div id="cross-validation" class="section level3">
+<h3>cross-validation</h3>
+<p>group lasso에서도 gel(group exponential lasso)기법을 이용하여 cross validation을 하여 최적의 parameter을 찾아냈다.</p>
+<pre class="r"><code>library(grpreg)
+
+cvfit &lt;- cv.grpreg(X, y, group, penalty=&quot;gel&quot;)
+plot(cvfit)</code></pre>
+<p><img src="/post/2020-06-03-Group_Lasso_files/figure-html/group-lasso-1.png" width="672" /></p>
+<pre class="r"><code>summary(cvfit)</code></pre>
+<pre><code>## gel-penalized linear regression with n=31476, p=179
+## At minimum cross-validation error (lambda=0.0001):
+## -------------------------------------------------
+##   Nonzero coefficients: 179
+##   Nonzero groups: 97
+##   Cross-validation error of 0.63
+##   Maximum R-squared: 0.37
+##   Maximum signal-to-noise ratio: 0.58
+##   Scale estimate (sigma) at lambda.min: 0.796</code></pre>
+</div>
+<div id="calculate-mse" class="section level3">
+<h3>calculate MSE</h3>
+<pre class="r"><code>predict(cvfit, X, type=&quot;link&quot;)[1:20]
+##  [1] -0.23653584  0.01161311  0.11580404  0.27915286 -0.15381748 -0.01617231
+##  [7] -0.87905521 -0.04353528  0.17534470  0.05915935 -0.13230062 -0.32136765
+## [13]  0.47868006  0.74251972  0.36152241 -0.05428723 -0.12275725  0.03647137
+## [19]  1.05679567  0.62272234
+
+test_vars &lt;- predict(cvfit, type=&quot;vars&quot;)
+
+y_hat &lt;- sqrt(predict(cvfit, X, type=&quot;link&quot;)*sd + mn)
+y_real &lt;-  sqrt(y * sd + mn)
+MSE_lasso = mean((y_hat- y_real)^2) ; MSE_lasso 
+## [1] 75.17317</code></pre>
+<p>결과적으로 MSE가 75.1731672인 모델을 생성했다.</p>
+</div>
+</div>

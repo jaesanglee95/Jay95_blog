@@ -1,0 +1,99 @@
+---
+title: "Group Lasso"
+author: "Jay, Lee"
+date: '2020-06-03'
+tags:
+- R Markdown
+- plot
+- regression
+categories: R
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE)
+```
+
+## importing data
+
+happy data는 서울 주민 가구원 행복도 조사 데이터로, Target variable은 Q48로 개인의 행복도를 나타낸다.
+
+```{r import-happy,  message= FALSE, warning= FALSE}
+library(readr)
+library(tidyverse)
+happy <- read_csv("https://raw.githubusercontent.com/YonseiESC/ESC-20SPRING/master/%ED%8C%8C%EC%9D%B4%EB%84%90%20%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8/6%EC%A1%B0/data/Seoul_Happiness_2014_train_dummies_06032141.csv")
+happy <- happy %>% 
+  dplyr::select(Q4B, everything(), -X1)
+dim(happy)
+```
+
+
+## outlier 처리
+
+선형회귀를 통해 target에서 residual이 높은 행을 제거했다.
+[참고](https://online.stat.psu.edu/stat501/lesson/11/11.3)
+이후, target의 skewness를 줄이기 위해 제곱변환을 실시하고, target의 정보를 저장했다.
+
+
+```{r outlier}
+linmodel = lm(Q4B~.,happy) #basic linear model
+studresid = rstandard(linmodel)
+
+
+happy = happy[-which(abs(studresid)>3),] 
+dim(happy)
+
+mn = mean(happy$Q4B^2)
+sd = sd(happy$Q4B^2)
+happy$Q4B = happy$Q4B^2
+```
+
+## Group Lasso model
+
+Lasso model은 더미변수가 하나의 범주형에서 왔다는 사실을 고려하지 않는다. 따라서, group lasso를 통해 이 점을 보완한 model을 사용했다.
+
+### generate list
+group lasso에서는 modeling을 위해 data를 list 형식으로 바꾸는 것이 편리하다.
+
+
+```{r group-list}
+happy = scale(happy)
+
+nominal_list=c('HTYP','HLIV','RLI','Q1','Q2B','Q14A1','Q17A1','Q17A2','Q18','Q21A','Q25A1','Q26','Q31A1','Q39','Q44','Q47C','DE1','DE6','DE9')
+
+group_col <- colnames(happy)[-1]
+group_col <- str_split_fixed(group_col, "_", n =2)[,1]
+
+happy_list <- list(X = as.matrix(happy[,-1]), 
+                   Y = happy[,1], 
+                   group = factor(group_col))
+
+X <- happy_list$X
+y <- happy_list$Y
+group <- happy_list$group
+
+```
+
+### cross-validation
+group lasso에서도 gel(group exponential lasso)기법을 이용하여 cross validation을 하여 최적의 parameter을 찾아냈다.
+
+```{r group-lasso, warning = FALSE, message = FALSE, collapse= FALSE}
+library(grpreg)
+
+cvfit <- cv.grpreg(X, y, group, penalty="gel")
+plot(cvfit)
+summary(cvfit)
+```
+
+### calculate MSE 
+
+```{r }
+predict(cvfit, X, type="link")[1:20]
+
+test_vars <- predict(cvfit, type="vars")
+
+y_hat <- sqrt(predict(cvfit, X, type="link")*sd + mn)
+y_real <-  sqrt(y * sd + mn)
+MSE_lasso = mean((y_hat- y_real)^2) ; MSE_lasso 
+```
+
+결과적으로 MSE가 `r MSE_lasso`인 모델을 생성했다.

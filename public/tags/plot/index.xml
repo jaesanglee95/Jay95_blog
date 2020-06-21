@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>plot on A Hugo website</title>
+    <link>/tags/plot/</link>
+    <description>Recent content in plot on A Hugo website</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 03 Jun 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/plot/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Group Lasso</title>
+      <link>/2020/06/03/group-lasso/</link>
+      <pubDate>Wed, 03 Jun 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/06/03/group-lasso/</guid>
+      <description>importing datahappy data는 서울 주민 가구원 행복도 조사 데이터로, Target variable은 Q48로 개인의 행복도를 나타낸다.
+library(readr)library(tidyverse)happy &amp;lt;- read_csv(&amp;quot;https://raw.githubusercontent.com/YonseiESC/ESC-20SPRING/master/%ED%8C%8C%EC%9D%B4%EB%84%90%20%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8/6%EC%A1%B0/data/Seoul_Happiness_2014_train_dummies_06032141.csv&amp;quot;)happy &amp;lt;- happy %&amp;gt;% dplyr::select(Q4B, everything(), -X1)dim(happy)## [1] 31848 180outlier 처리선형회귀를 통해 target에서 residual이 높은 행을 제거했다.참고이후, target의 skewness를 줄이기 위해 제곱변환을 실시하고, target의 정보를 저장했다.
+linmodel = lm(Q4B~.,happy) #basic linear modelstudresid = rstandard(linmodel)happy = happy[-which(abs(studresid)&amp;gt;3),] dim(happy)## [1] 31476 180mn = mean(happy$Q4B^2)sd = sd(happy$Q4B^2)happy$Q4B = happy$Q4B^2Group Lasso modelLasso model은 더미변수가 하나의 범주형에서 왔다는 사실을 고려하지 않는다.</description>
+    </item>
+    
+    <item>
+      <title>Time Series</title>
+      <link>/2019/05/27/time-series/</link>
+      <pubDate>Mon, 27 May 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/2019/05/27/time-series/</guid>
+      <description>연세대학교 시계열분석 수업자료를 토대로한 복습 자료입니다.
+Time Series정상시계열과 random walk 자료생성# A time series which contains no unit-root:x = rnorm(1000)# A time series which contains a unit-root:y = cumsum(c(0, x))par(mfrow=c(2,1))plot.ts(x)plot.ts(y)단위근 검정 / 1차 차분 후 단위근 검정adfTest(x)## ## Title:## Augmented Dickey-Fuller Test## ## Test Results:## PARAMETER:## Lag Order: 1## STATISTIC:## Dickey-Fuller: -22.</description>
+    </item>
+    
+  </channel>
+</rss>

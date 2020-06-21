@@ -1,0 +1,15 @@
+---
+date: "2020-06-22"
+title: Resume
+---
+
+```{r warning=FALSE, echo=FALSE, message=FALSE}
+
+library(magick)
+
+Jay <- image_read_pdf("resume_jay.pdf", density = 300)
+
+Jay
+
+
+```

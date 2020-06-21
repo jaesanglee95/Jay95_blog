@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.72.0" />
+
+
+<title>Comparing (Business Analytics) - A Hugo website</title>
+<meta property="og:title" content="Comparing (Business Analytics) - A Hugo website">
+
+
+  <link href='/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+
+<link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+<link rel="stylesheet" href="/css/fonts.css" media="all">
+<link rel="stylesheet" href="/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/images/logo.png"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/about/">About</a></li>
+    
+    <li><a href="https://github.com/rstudio/blogdown">GitHub</a></li>
+    
+    <li><a href="/resume">Resume</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">2 min read</span>
+    
+
+    <h1 class="article-title">Comparing (Business Analytics)</h1>
+
+    
+    <span class="article-date">2019-12-16</span>
+    
+
+    <div class="article-content">
+      
+
+
+<p>연세대학교 비즈니스 애널리틱스 수업자료를 토대로 한 복습 자료입니다.</p>
+<div id="load-the-.csv-data-from-the-web" class="section level2">
+<h2>Load the .csv data from the web</h2>
+<pre class="r"><code>seg.df = read.csv(&quot;http://goo.gl/qw303p&quot;)
+summary(seg.df)</code></pre>
+<pre><code>##       age           gender        income            kids        ownHome   
+##  Min.   :19.26   Female:157   Min.   : -5183   Min.   :0.00   ownNo :159  
+##  1st Qu.:33.01   Male  :143   1st Qu.: 39656   1st Qu.:0.00   ownYes:141  
+##  Median :39.49                Median : 52014   Median :1.00               
+##  Mean   :41.20                Mean   : 50937   Mean   :1.27               
+##  3rd Qu.:47.90                3rd Qu.: 61403   3rd Qu.:2.00               
+##  Max.   :80.49                Max.   :114278   Max.   :7.00               
+##   subscribe         Segment   
+##  subNo :260   Moving up : 70  
+##  subYes: 40   Suburb mix:100  
+##               Travelers : 80  
+##               Urban hip : 50  
+##                               
+## </code></pre>
+</div>
+<div id="explore-the-data-structure" class="section level2">
+<h2>Explore the data structure</h2>
+<pre class="r"><code>str(seg.df)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    300 obs. of  7 variables:
+##  $ age      : num  47.3 31.4 43.2 37.3 41 ...
+##  $ gender   : Factor w/ 2 levels &quot;Female&quot;,&quot;Male&quot;: 2 2 2 1 1 2 2 2 1 1 ...
+##  $ income   : num  49483 35546 44169 81042 79353 ...
+##  $ kids     : int  2 1 0 1 3 4 3 0 1 0 ...
+##  $ ownHome  : Factor w/ 2 levels &quot;ownNo&quot;,&quot;ownYes&quot;: 1 2 2 1 2 2 1 1 1 2 ...
+##  $ subscribe: Factor w/ 2 levels &quot;subNo&quot;,&quot;subYes&quot;: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ Segment  : Factor w/ 4 levels &quot;Moving up&quot;,&quot;Suburb mix&quot;,..: 2 2 2 2 2 2 2 2 2 2 ...</code></pre>
+<pre class="r"><code>head(seg.df)</code></pre>
+<pre><code>##        age gender   income kids ownHome subscribe    Segment
+## 1 47.31613   Male 49482.81    2   ownNo     subNo Suburb mix
+## 2 31.38684   Male 35546.29    1  ownYes     subNo Suburb mix
+## 3 43.20034   Male 44169.19    0  ownYes     subNo Suburb mix
+## 4 37.31700 Female 81041.99    1   ownNo     subNo Suburb mix
+## 5 40.95439 Female 79353.01    3  ownYes     subNo Suburb mix
+## 6 43.03387   Male 58143.36    4  ownYes     subNo Suburb mix</code></pre>
+<pre class="r"><code>summary(seg.df)</code></pre>
+<pre><code>##       age           gender        income            kids        ownHome   
+##  Min.   :19.26   Female:157   Min.   : -5183   Min.   :0.00   ownNo :159  
+##  1st Qu.:33.01   Male  :143   1st Qu.: 39656   1st Qu.:0.00   ownYes:141  
+##  Median :39.49                Median : 52014   Median :1.00               
+##  Mean   :41.20                Mean   : 50937   Mean   :1.27               
+##  3rd Qu.:47.90                3rd Qu.: 61403   3rd Qu.:2.00               
+##  Max.   :80.49                Max.   :114278   Max.   :7.00               
+##   subscribe         Segment   
+##  subNo :260   Moving up : 70  
+##  subYes: 40   Suburb mix:100  
+##               Travelers : 80  
+##               Urban hip : 50  
+##                               
+## </code></pre>
+<pre class="r"><code># loading the lattice package
+library(lattice)
+library(ggplot2)
+
+ggplot(seg.df, aes(x = Segment, fill = subscribe))+
+  geom_bar()+
+  labs(
+    y= &quot;&quot;
+  )</code></pre>
+<div class="figure"><span id="fig:plot"></span>
+<img src="/post/2019-12-16-comparing-business-analytics_files/figure-html/plot-1.png" alt="Figure 1.1 proportions by subscribe across segment" width="672" />
+<p class="caption">
+Figure 1: Figure 1.1 proportions by subscribe across segment
+</p>
+</div>
+</div>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+    
+  </body>
+</html>
+
