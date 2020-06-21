@@ -7,7 +7,7 @@ title: Resume
 
 library(magick)
 
-Jay <- image_read_pdf("resume_jay.pdf", density = 300)
+Jay <- image_read_pdf("Resume_jay.pdf", density = 300)
 
 Jay
 
